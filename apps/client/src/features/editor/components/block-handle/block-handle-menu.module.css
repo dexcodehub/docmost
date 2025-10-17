@@ -1,0 +1,45 @@
+/* Block handle popover menu styles to match the screenshot */
+.menuRoot {
+  /* Mantine Popover dropdown uses this container */
+  padding: 8px 6px;
+  border-radius: 10px;
+  box-shadow: var(--mantine-shadow-md);
+  background: var(--mantine-color-body);
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-5));
+  min-width: 180px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.item:hover {
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.separator {
+  height: 1px;
+  margin: 6px 0;
+  background: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-5));
+}
+
+.label {
+  font-size: 14px;
+}
+
+.rightArrow {
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.anchor {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+}

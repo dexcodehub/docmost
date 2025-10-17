@@ -1,111 +1,118 @@
-import React, { ReactNode, useState } from "react";
-import {
-  ActionIcon,
-  Popover,
-  Button,
-  useMantineColorScheme,
-} from "@mantine/core";
-import { useClickOutside, useDisclosure, useWindowEvent } from "@mantine/hooks";
-import { Suspense } from "react";
-const Picker = React.lazy(() => import("@emoji-mart/react"));
-import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ActionIcon, Button, Group, Popover } from "@mantine/core";
+import type { ActionIconProps } from "@mantine/core";
+import { useDisclosure, useClickOutside, useWindowEvent } from "@mantine/hooks";
+import { IconMoodSmile } from "@tabler/icons-react";
 
-export interface EmojiPickerInterface {
-  onEmojiSelect: (emoji: any) => void;
-  icon: ReactNode;
-  removeEmojiAction: () => void;
-  readOnly: boolean;
-  actionIconProps?: {
-    size?: string;
-    variant?: string;
-    c?: string;
-  };
+interface EmojiPickerProps {
+  value?: string | null;
+  onChange?: (emoji: string | null) => void;
+  // Alias to fit existing usage in some components
+  onEmojiSelect?: (emoji: any) => void;
+  disabled?: boolean;
+  // Optional UI customizations
+  icon?: React.ReactNode; // shown when no value selected
+  readOnly?: boolean; // disable interactions
+  removeEmojiAction?: () => void; // callback when removing
+  actionIconProps?: Partial<ActionIconProps>; // customize trigger icon props
 }
 
-function EmojiPicker({
+export function EmojiPicker({
+  value,
+  onChange,
   onEmojiSelect,
+  disabled,
   icon,
-  removeEmojiAction,
   readOnly,
+  removeEmojiAction,
   actionIconProps,
-}: EmojiPickerInterface) {
-  const { t } = useTranslation();
-  const [opened, handlers] = useDisclosure(false);
-  const { colorScheme } = useMantineColorScheme();
-  const [target, setTarget] = useState<HTMLElement | null>(null);
-  const [dropdown, setDropdown] = useState<HTMLDivElement | null>(null);
+}: EmojiPickerProps) {
+  const [opened, { open, close, toggle }] = useDisclosure(false);
+  const targetRef = useRef<HTMLDivElement | null>(null);
+  const clickOutsideRef = useClickOutside(() => close());
 
-  useClickOutside(
-    () => handlers.close(),
-    ["mousedown", "touchstart"],
-    [dropdown, target],
+  // Use a non-button trigger to avoid nested button warnings in button contexts
+  const Trigger = (
+    <ActionIcon
+      component="div"
+      ref={targetRef}
+      onClick={disabled || readOnly ? undefined : toggle}
+      size={actionIconProps?.size ?? "sm"}
+      variant={actionIconProps?.variant ?? "light"}
+      aria-label="选择表情"
+      role="button"
+      tabIndex={0}
+      data-testid="emoji-trigger"
+      {...actionIconProps}
+    >
+      {value ? (
+        <span style={{ fontSize: 18, lineHeight: 1 }}>{value}</span>
+      ) : (
+        icon ? icon : <IconMoodSmile size={16} />
+      )}
+    </ActionIcon>
   );
 
-  // We need this because the default Mantine popover closeOnEscape does not work
-  useWindowEvent("keydown", (event) => {
-    if (opened && event.key === "Escape") {
-      event.stopPropagation();
-      event.preventDefault();
-      handlers.close();
-    }
+  useWindowEvent("keydown", (e) => {
+    if (e.key === "Escape") close();
   });
 
-  const handleEmojiSelect = (emoji) => {
-    onEmojiSelect(emoji);
-    handlers.close();
-  };
-
-  const handleRemoveEmoji = () => {
-    removeEmojiAction();
-    handlers.close();
-  };
-
   return (
-    <Popover
-      opened={opened}
-      onClose={handlers.close}
-      width={332}
-      position="bottom"
-      disabled={readOnly}
-      closeOnEscape={true}
-    >
-      <Popover.Target ref={setTarget}>
-        <ActionIcon 
-          c={actionIconProps?.c || "gray"} 
-          variant={actionIconProps?.variant || "transparent"} 
-          size={actionIconProps?.size}
-          onClick={handlers.toggle}
-        >
-          {icon}
-        </ActionIcon>
-      </Popover.Target>
-      <Suspense fallback={null}>
-        <Popover.Dropdown bg="000" style={{ border: "none" }} ref={setDropdown}>
-          <Picker
-            data={async () => (await import("@emoji-mart/data")).default}
-            onEmojiSelect={handleEmojiSelect}
-            perLine={8}
-            skinTonePosition="search"
-            theme={colorScheme}
+    <Popover opened={opened} onChange={(o) => (o ? open() : close())} withArrow>
+      <Popover.Target>{Trigger}</Popover.Target>
+      <Popover.Dropdown ref={clickOutsideRef} style={{ padding: 8 }}>
+        <div style={{ width: 276 }}>
+          <PickerAsync
+            onEmojiSelect={(emoji: any) => {
+              const native = emoji?.native || emoji?.shortcodes || emoji || "";
+              const val = native || null;
+              onChange?.(val);
+              onEmojiSelect?.(val);
+              close();
+            }}
           />
+        </div>
+        <Group justify="space-between" mt="xs">
           <Button
             variant="default"
-            c="gray"
             size="xs"
-            style={{
-              position: "absolute",
-              zIndex: 2,
-              bottom: "1rem",
-              right: "1rem",
+            onClick={() => {
+              onChange?.(null);
+              removeEmojiAction?.();
+              close();
             }}
-            onClick={handleRemoveEmoji}
           >
-            {t("Remove")}
+            移除
           </Button>
-        </Popover.Dropdown>
-      </Suspense>
+        </Group>
+      </Popover.Dropdown>
     </Popover>
   );
+}
+
+// Async loader component to render emoji-mart Picker default export with data
+function PickerAsync(props: any) {
+  const [PickerComp, setPickerComp] = useState<any>(null);
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      import("@emoji-mart/react").then((m) => m.default),
+      import("@emoji-mart/data").then((m) => m.default),
+    ]).then(([Comp, dataset]) => {
+      if (!mounted) return;
+      setPickerComp(() => Comp);
+      setData(dataset);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!PickerComp || !data) return null;
+  const Picker = PickerComp;
+  return <Picker data={data} {...props} />;
 }
 
 export default EmojiPicker;

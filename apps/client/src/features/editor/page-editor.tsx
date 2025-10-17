@@ -56,6 +56,7 @@ import { FIVE_MINUTES } from "@/lib/constants.ts";
 import { PageEditMode } from "@/features/user/types/user.types.ts";
 import { jwtDecode } from "jwt-decode";
 import { searchSpotlight } from "@/features/search/constants.ts";
+import BlockHandleMenu from "@/features/editor/components/block-handle/block-handle-menu";
 
 interface PageEditorProps {
   pageId: string;
@@ -415,6 +416,8 @@ export default function PageEditor({
             <LinkMenu editor={editor} appendTo={menuContainerRef} />
           </div>
         )}
+        {/* Click-handle menu for Heading 2 */}
+        {editor && <BlockHandleMenu editor={editor} />}
         {showCommentPopup && <CommentDialog editor={editor} pageId={pageId} />}
       </div>
       <div

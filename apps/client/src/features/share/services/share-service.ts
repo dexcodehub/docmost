@@ -35,9 +35,11 @@ export async function updateShare(data: IUpdateShare): Promise<any> {
   return req.data;
 }
 
-export async function getShareForPage(pageId: string): Promise<IShareForPage> {
+export async function getShareForPage(pageId: string): Promise<IShareForPage | null> {
   const req = await api.post<any>("/shares/for-page", { pageId });
-  return req.data;
+  // Backend may return 204 No Content or undefined when page isn't shared
+  // React Query requires a non-undefined value, so normalize to null
+  return (req?.data ?? null) as IShareForPage | null;
 }
 
 export async function getSharePageInfo(

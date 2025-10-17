@@ -37,13 +37,15 @@ function pushMem(level: "DEBUG" | "INFO" | "WARN" | "ERROR", text: string) {
   notify();
 }
 
-// Attach browser console to Tauri log file when available (no-op in web)
-try {
-  // Will forward console.debug/info/warn/error to the plugin targets
-  // Requires capability: "log:default" in src-tauri/capabilities/default.json
-  (TauriLog as any).attachConsole?.();
-} catch (err) {
-  // ignore when plugin or capability is not available
+// 仅在桌面环境调用 attachConsole，避免 Web 端未定义 __TAURI__ 导致的 Promise 拒绝
+const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI__;
+if (isTauri) {
+  try {
+    // Forward console.* to plugin targets when capability is available
+    (TauriLog as any).attachConsole?.();
+  } catch (err) {
+    // ignore when plugin or capability is not available
+  }
 }
 
 export function getLogBuffer(): string[] {
@@ -59,7 +61,11 @@ export async function logDebug(message: unknown, meta?: unknown) {
   const text = meta ? `${fmt(message)} | ${fmt(meta)}` : fmt(message);
   pushMem("DEBUG", text);
   try {
-    await TauriLog.debug(text);
+    if (isTauri) {
+      await TauriLog.debug(text);
+    } else {
+      throw new Error("not-tauri");
+    }
   } catch {
     console.debug("[DEBUG]", text);
   }
@@ -69,7 +75,11 @@ export async function logInfo(message: unknown, meta?: unknown) {
   const text = meta ? `${fmt(message)} | ${fmt(meta)}` : fmt(message);
   pushMem("INFO", text);
   try {
-    await TauriLog.info(text);
+    if (isTauri) {
+      await TauriLog.info(text);
+    } else {
+      throw new Error("not-tauri");
+    }
   } catch {
     console.info("[INFO]", text);
   }
@@ -79,7 +89,11 @@ export async function logWarn(message: unknown, meta?: unknown) {
   const text = meta ? `${fmt(message)} | ${fmt(meta)}` : fmt(message);
   pushMem("WARN", text);
   try {
-    await TauriLog.warn(text);
+    if (isTauri) {
+      await TauriLog.warn(text);
+    } else {
+      throw new Error("not-tauri");
+    }
   } catch {
     console.warn("[WARN]", text);
   }
@@ -89,7 +103,11 @@ export async function logError(message: unknown, meta?: unknown) {
   const text = meta ? `${fmt(message)} | ${fmt(meta)}` : fmt(message);
   pushMem("ERROR", text);
   try {
-    await TauriLog.error(text);
+    if (isTauri) {
+      await TauriLog.error(text);
+    } else {
+      throw new Error("not-tauri");
+    }
   } catch {
     console.error("[ERROR]", text);
   }
@@ -136,6 +154,7 @@ export async function logAxiosError(err: unknown) {
 
 export async function getAppLogPath(): Promise<string | undefined> {
   try {
+    if (!isTauri) return undefined;
     const dir = await appLogDir();
     return await join(dir, "app.log");
   } catch (e) {
