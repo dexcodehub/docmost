@@ -37,6 +37,7 @@ import { MfaSetupRequiredPage } from "@/ee/mfa/pages/mfa-setup-required-page";
 import SpaceTrash from "@/pages/space/space-trash.tsx";
 import UserApiKeys from "@/ee/api-key/pages/user-api-keys";
 import WorkspaceApiKeys from "@/ee/api-key/pages/workspace-api-keys";
+import DebugConsole from "@/pages/debug/debug-console";
 
 export default function App() {
   const { t } = useTranslation();
@@ -47,6 +48,7 @@ export default function App() {
     <>
       <Routes>
         <Route index element={<Navigate to="/home" />} />
+        <Route path={"/debug"} element={<DebugConsole />} />
         <Route path={"/login"} element={<LoginPage />} />
         <Route path={"/invites/:invitationId"} element={<InviteSignup />} />
         <Route path={"/forgot-password"} element={<ForgotPassword />} />

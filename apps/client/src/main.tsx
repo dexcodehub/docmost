@@ -21,6 +21,7 @@ import {
   isPostHogEnabled,
 } from "@/lib/config.ts";
 import posthog from "posthog-js";
+import { initGlobalErrorCapture, logPhase } from "@/lib/logger";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +34,9 @@ export const queryClient = new QueryClient({
   },
 });
 
+initGlobalErrorCapture();
+logPhase("boot:begin");
+
 if (isCloud() && isPostHogEnabled) {
   posthog.init(getPostHogKey(), {
     api_host: getPostHogHost(),
@@ -40,25 +44,36 @@ if (isCloud() && isPostHogEnabled) {
     disable_session_recording: true,
     capture_pageleave: false,
   });
+  logPhase("posthog:init:done");
 }
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
 );
+logPhase("react-root:created");
 
-root.render(
-  <BrowserRouter>
-    <MantineProvider theme={theme} cssVariablesResolver={mantineCssResolver}>
-      <ModalsProvider>
-        <QueryClientProvider client={queryClient}>
-          <Notifications position="bottom-center" limit={3} />
-          <HelmetProvider>
-            <PostHogProvider client={posthog}>
-              <App />
-            </PostHogProvider>
-          </HelmetProvider>
-        </QueryClientProvider>
-      </ModalsProvider>
-    </MantineProvider>
-  </BrowserRouter>,
-);
+try {
+  root.render(
+    <BrowserRouter>
+      <MantineProvider theme={theme} cssVariablesResolver={mantineCssResolver}>
+        <ModalsProvider>
+          <QueryClientProvider client={queryClient}>
+            <Notifications position="bottom-center" limit={3} />
+            <HelmetProvider>
+              <PostHogProvider client={posthog}>
+                <App />
+              </PostHogProvider>
+            </HelmetProvider>
+          </QueryClientProvider>
+        </ModalsProvider>
+      </MantineProvider>
+    </BrowserRouter>,
+  );
+  logPhase("react-root:rendered");
+} catch (e) {
+  // 捕获渲染阶段异常，避免白屏无日志
+  import("@/lib/logger").then(async (m) => {
+    await m.logError("root.render.failed", e);
+  });
+  throw e;
+}

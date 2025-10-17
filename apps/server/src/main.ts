@@ -81,7 +81,40 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  // CORS 配置：允许桌面 Tauri 源并携带 Cookie
+  const defaultOrigins = new Set([
+    'tauri://localhost',
+    'http://localhost:5173',
+  ]);
+  const extraOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  extraOrigins.forEach((o) => defaultOrigins.add(o));
+
+  app.enableCors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (defaultOrigins.has(origin)) return cb(null, true);
+      // 允许本机与局域网 IP（含端口）
+      if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return cb(null, true);
+      }
+      if (/^http:\/\/\d{1,3}(\.\d{1,3}){3}(:\d+)?$/.test(origin)) {
+        return cb(null, true);
+      }
+      cb(new Error('Not allowed by CORS'), false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+    ],
+  });
+
   app.useGlobalInterceptors(new TransformHttpResponseInterceptor(reflector));
   app.enableShutdownHooks();
 

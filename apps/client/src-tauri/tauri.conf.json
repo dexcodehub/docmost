@@ -1,0 +1,33 @@
+{
+  "productName": "Docmost",
+  "version": "../package.json",
+  "identifier": "com.docmost.desktop",
+  "build": {
+    "beforeDevCommand": "node ./src-tauri/scripts/generate-icon.js && pnpm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "node ./src-tauri/scripts/generate-icon.js && pnpm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Docmost",
+        "width": 1200,
+        "height": 800,
+        "resizable": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    },
+    "icon": ["icons/icon.png"]
+  },
+  "plugins": {}
+}

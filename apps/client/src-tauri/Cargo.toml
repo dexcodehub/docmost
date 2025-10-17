@@ -1,0 +1,28 @@
+[package]
+name = "docmost_client"
+version = "0.1.0"
+description = "Docmost Desktop Client"
+authors = ["Docmost"]
+edition = "2021"
+
+[lib]
+# v2 要求定义库名，以便 desktop/main 调用相同入口
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.4.1", features = [] }
+
+[dependencies]
+tauri = { version = "2.4.1", features = [] }
+serde_json = "1.0"
+# 持久化日志插件
+tauri-plugin-log = { version = "2.4.1", features = ["colored"] }
+# 读取文件日志
+tauri-plugin-fs = { version = "2.4.1" }
+log = "0.4"
+# 基础与必要：序列化、错误处理与异步运行时
+serde = { version = "1.0", features = ["derive"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

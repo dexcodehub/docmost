@@ -8,11 +8,24 @@ declare global {
   }
 }
 
+function getDesktopServerOrigin(): string {
+  const configured = (window?.CONFIG?.APP_URL || import.meta.env?.VITE_API_ORIGIN) as string | undefined;
+  const stored =
+    (typeof localStorage !== "undefined" && localStorage.getItem("docmost_server_origin")) || undefined;
+  return configured || stored || "http://localhost:3000";
+}
+
 export function getAppName(): string {
   return "Docmost";
 }
 
 export function getAppUrl(): string {
+  // 在打包后的桌面环境下，返回本地服务地址（支持 localhost 或指定 IP）。
+  const isDesktop =
+    typeof window !== "undefined" && (window as any).__TAURI__ && !import.meta.env.DEV;
+  if (isDesktop) {
+    return getDesktopServerOrigin();
+  }
   return `${window.location.protocol}//${window.location.host}`;
 }
 
