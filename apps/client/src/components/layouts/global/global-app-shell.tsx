@@ -98,6 +98,9 @@ export default function GlobalAppShell({
         }
       }
       padding="md"
+      style={{
+        '--sidebar-width': `${isSpaceRoute ? sidebarWidth : 300}px`,
+      } as React.CSSProperties}
     >
       <AppShell.Header px="md" className={classes.header}>
         <AppHeader />

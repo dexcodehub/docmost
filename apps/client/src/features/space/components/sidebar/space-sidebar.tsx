@@ -5,16 +5,22 @@ import {
   Text,
   Tooltip,
   UnstyledButton,
+  Badge,
+  Divider,
 } from "@mantine/core";
 import {
   IconArrowDown,
   IconDots,
   IconFileExport,
-  IconHome,
+  IconHome2,
   IconPlus,
   IconSearch,
-  IconSettings,
+  IconSettings2,
   IconTrash,
+  IconFiles,
+  IconBookmark,
+  IconClock,
+  IconSettings,
 } from "@tabler/icons-react";
 import classes from "./space-sidebar.module.css";
 import React, { useState, useEffect } from "react";
@@ -107,114 +113,109 @@ export function SpaceSidebar() {
 
         <div className={classes.section}>
           <div className={classes.menuItems}>
-            <UnstyledButton
-              component={Link}
-              to={getSpaceUrl(spaceSlug)}
-              className={clsx(
-                classes.menu,
-                location.pathname.toLowerCase() === getSpaceUrl(spaceSlug)
-                  ? classes.activeButton
-                  : "",
-              )}
-            >
-              <div className={classes.menuItemInner}>
-                <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
-                   <EmojiPicker
-                     onEmojiSelect={(emoji: any) =>
-                       setEmojiConfig((prev) => ({
-                         ...prev,
-                         overview: emoji?.native || emoji?.emoji || emoji,
-                       }))
-                     }
-                     icon={
-                       emojiConfig.overview ? (
-                         <Text size="md">{emojiConfig.overview}</Text>
-                       ) : (
-                         <IconHome size={18} className={classes.menuItemIcon} stroke={2} />
-                       )
-                     }
-                     readOnly={false}
-                     removeEmojiAction={() =>
-                       setEmojiConfig((prev) => ({ ...prev, overview: null }))
-                     }
-                     actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
-                   />
-                 </div>
-                 <span>{t("Overview")}</span>
-               </div>
-            </UnstyledButton>
-
-            <UnstyledButton
-              className={classes.menu}
-              onClick={searchSpotlight.open}
-            >
-              <div className={classes.menuItemInner}>
-                <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
-                   <EmojiPicker
-                     onEmojiSelect={(emoji: any) =>
-                       setEmojiConfig((prev) => ({
-                         ...prev,
-                         search: emoji?.native || emoji?.emoji || emoji,
-                       }))
-                     }
-                     icon={
-                       emojiConfig.search ? (
-                         <Text size="md">{emojiConfig.search}</Text>
-                       ) : (
-                         <IconSearch size={18} className={classes.menuItemIcon} stroke={2} />
-                       )
-                     }
-                     readOnly={false}
-                     removeEmojiAction={() =>
-                       setEmojiConfig((prev) => ({ ...prev, search: null }))
-                     }
-                     actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
-                   />
-                 </div>
-                 <span>{t("Search")}</span>
-               </div>
-            </UnstyledButton>
-
-            <UnstyledButton className={classes.menu} onClick={openSettings}>
-              <div className={classes.menuItemInner}>
-                <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
-                   <EmojiPicker
-                     onEmojiSelect={(emoji: any) =>
-                       setEmojiConfig((prev) => ({
-                         ...prev,
-                         settings: emoji?.native || emoji?.emoji || emoji,
-                       }))
-                     }
-                     icon={
-                       emojiConfig.settings ? (
-                         <Text size="md">{emojiConfig.settings}</Text>
-                       ) : (
-                         <IconSettings size={18} className={classes.menuItemIcon} stroke={2} />
-                       )
-                     }
-                     readOnly={false}
-                     removeEmojiAction={() =>
-                       setEmojiConfig((prev) => ({ ...prev, settings: null }))
-                     }
-                     actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
-                   />
-                 </div>
-                 <span>{t("Space settings")}</span>
-               </div>
-            </UnstyledButton>
-
-            {spaceAbility.can(
-              SpaceCaslAction.Manage,
-              SpaceCaslSubject.Page,
-            ) && (
+            {/* 主要导航区域 */}
+            <div className={classes.primaryNav}>
               <UnstyledButton
-                className={classes.menu}
+                component={Link}
+                to={getSpaceUrl(spaceSlug)}
+                className={clsx(
+                  classes.menu,
+                  classes.primaryMenuItem,
+                  location.pathname.toLowerCase() === getSpaceUrl(spaceSlug)
+                    ? classes.activeButton
+                    : "",
+                )}
+                role="menuitem"
+                aria-label="导航到Overview"
+                tabIndex={0}
+              >
+                <div className={classes.menuItemInner}>
+                  <div onClick={handleEmojiIconClick}  className={classes.overviewFlex}>
+                    <div className={classes.emojiIcon}>
+                     <EmojiPicker
+                       onEmojiSelect={(emoji: any) =>
+                         setEmojiConfig((prev) => ({
+                           ...prev,
+                           overview: emoji?.native || emoji?.emoji || emoji,
+                         }))
+                       }
+                       icon={
+                         emojiConfig.overview ? (
+                           <Text size="md">{emojiConfig.overview}</Text>
+                         ) : (
+                           <IconHome2 size={20} className={classes.menuItemIcon} stroke={1.5} />
+                         )
+                       }
+                       readOnly={false}
+                       removeEmojiAction={() =>
+                         setEmojiConfig((prev) => ({ ...prev, overview: null }))
+                       }
+                       actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                     />
+                   </div>
+                   <span className={classes.menuItemText}>{t("Overview")}</span>
+                  </div>
+                  <div onClick={openSettings} className={classes.settingsIconContainer}>
+                    <IconSettings size={18} className={classes.menuItemIcon} stroke={1.5} />
+                  </div>
+                 </div>
+              </UnstyledButton>
+            </div>
+
+            {/* 工具功能区域 */}
+            <div className={classes.toolsNav}>
+              <UnstyledButton
+                className={clsx(classes.menu, classes.toolMenuItem)}
+                onClick={searchSpotlight.open}
+                role="menuitem"
+                aria-label="搜索页面和内容"
+                tabIndex={0}
+              >
+                <div className={classes.menuItemInner}>
+                  <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
+                     <EmojiPicker
+                       onEmojiSelect={(emoji: any) =>
+                         setEmojiConfig((prev) => ({
+                           ...prev,
+                           search: emoji?.native || emoji?.emoji || emoji,
+                         }))
+                       }
+                       icon={
+                         emojiConfig.search ? (
+                           <Text size="md">{emojiConfig.search}</Text>
+                         ) : (
+                           <IconSearch size={18} className={classes.menuItemIcon} stroke={1.5} />
+                         )
+                       }
+                       readOnly={false}
+                       removeEmojiAction={() =>
+                         setEmojiConfig((prev) => ({ ...prev, search: null }))
+                       }
+                       actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                     />
+                   </div>
+                   <span className={classes.menuItemText}>{t("Search")}</span>
+                   <Badge size="xs" variant="light" color="blue" className={classes.shortcutBadge}>
+                     ⌘K
+                   </Badge>
+                 </div>
+              </UnstyledButton>
+
+              {spaceAbility.can(
+                SpaceCaslAction.Manage,
+                SpaceCaslSubject.Page,
+              ) && (
+                <UnstyledButton
+                className={clsx(classes.menu, classes.toolMenuItem)}
                 onClick={() => {
                   handleCreatePage();
                   if (mobileSidebarOpened) {
                     toggleMobileSidebar();
                   }
                 }}
+                role="menuitem"
+                aria-label="创建新页面"
+                tabIndex={0}
               >
                 <div className={classes.menuItemInner}>
                   <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
@@ -229,7 +230,7 @@ export function SpaceSidebar() {
                          emojiConfig.newpage ? (
                            <Text size="md">{emojiConfig.newpage}</Text>
                          ) : (
-                           <IconPlus size={18} className={classes.menuItemIcon} stroke={2} />
+                           <IconPlus size={18} className={classes.menuItemIcon} stroke={1.5} />
                          )
                        }
                        readOnly={false}
@@ -239,41 +240,90 @@ export function SpaceSidebar() {
                        actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
                      />
                    </div>
-                   <span>{t("New page")}</span>
+                   <span className={classes.menuItemText}>{t("New page")}</span>
                  </div>
               </UnstyledButton>
-            )}
+              )}
+            </div>
+
+            {/* 分隔线 */}
+            <Divider className={classes.menuDivider} />
+
+            {/* 设置区域
+            <div className={classes.settingsNav} role="group" aria-label="设置和管理">
+              <UnstyledButton 
+                className={clsx(classes.menu, classes.settingsMenuItem)} 
+                onClick={openSettings}
+                role="menuitem"
+                aria-label="打开空间设置"
+                tabIndex={0}
+              >
+                <div className={classes.menuItemInner}>
+                  <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
+                     <EmojiPicker
+                       onEmojiSelect={(emoji: any) =>
+                         setEmojiConfig((prev) => ({
+                           ...prev,
+                           settings: emoji?.native || emoji?.emoji || emoji,
+                         }))
+                       }
+                       icon={
+                         emojiConfig.settings ? (
+                           <Text size="md">{emojiConfig.settings}</Text>
+                         ) : (
+                           <IconSettings2 size={18} className={classes.menuItemIcon} stroke={1.5} />
+                         )
+                       }
+                       readOnly={false}
+                       removeEmojiAction={() =>
+                         setEmojiConfig((prev) => ({ ...prev, settings: null }))
+                       }
+                       actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                     />
+                   </div>
+                   <span className={classes.menuItemText}>{t("Space settings")}</span>
+                 </div>
+              </UnstyledButton>
+            </div> */}
           </div>
         </div>
 
         <div className={clsx(classes.section, classes.sectionPages)}>
           <Group className={classes.pagesHeader} justify="space-between">
-            <Text size="xs" fw={500} c="dimmed">
-              {t("Pages")}
-            </Text>
+            <Text 
+              size="xs" 
+              fw={600} 
+              c="dimmed" 
+              className={classes.sectionTitle}
+              role="heading"
+              aria-level={2}
+            >
+               {t("Pages")}
+             </Text>
 
             {spaceAbility.can(
               SpaceCaslAction.Manage,
               SpaceCaslSubject.Page,
             ) && (
-              <Group gap="xs">
+              <Group gap="xs" className={classes.headerActions}>
                 <SpaceMenu spaceId={space.id} onSpaceSettings={openSettings} />
 
                 <Tooltip label={t("Create page")} withArrow position="right">
                   <ActionIcon
                     variant="default"
-                    size={18}
+                    className={classes.headerActionIcon}
                     onClick={handleCreatePage}
                     aria-label={t("Create page")}
+                    title="创建新页面 (⌘N)"
                   >
-                    <IconPlus />
+                    <IconPlus size={16} />
                   </ActionIcon>
                 </Tooltip>
               </Group>
             )}
           </Group>
 
-          <div className={classes.pages}>
+          <div className={classes.pages} role="tree" aria-label="页面树">
             <SpaceTree
               spaceId={space.id}
               readOnly={spaceAbility.cannot(
@@ -319,10 +369,10 @@ function SpaceMenu({ spaceId, onSpaceSettings }: SpaceMenuProps) {
           >
             <ActionIcon
               variant="default"
-              size={18}
+              className={classes.headerActionIcon}
               aria-label={t("Space menu")}
             >
-              <IconDots />
+              <IconDots size={16} />
             </ActionIcon>
           </Tooltip>
         </Menu.Target>
@@ -346,7 +396,7 @@ function SpaceMenu({ spaceId, onSpaceSettings }: SpaceMenuProps) {
 
           <Menu.Item
             onClick={onSpaceSettings}
-            leftSection={<IconSettings size={16} />}
+            leftSection={<IconSettings2 size={16} />}
           >
             {t("Space settings")}
           </Menu.Item>

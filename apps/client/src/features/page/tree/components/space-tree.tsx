@@ -370,7 +370,9 @@ function Node({ node, style, dragHandle, tree }: NodeRendererProps<any>) {
     <>
       <Box
         style={style}
-        className={clsx(classes.node, node.state)}
+        className={clsx(classes.node, node.state, {
+          [classes.dragging]: node.isDragging,
+        })}
         component={Link}
         to={pageUrl}
         // @ts-ignore
@@ -382,6 +384,16 @@ function Node({ node, style, dragHandle, tree }: NodeRendererProps<any>) {
         }}
         onMouseEnter={prefetchPage}
         onMouseLeave={cancelPagePrefetch}
+        onDragStart={(e) => {
+          // 添加拖拽开始时的视觉反馈
+          e.currentTarget.style.opacity = '0.6';
+          e.currentTarget.style.transform = 'scale(1.02) rotate(2deg)';
+        }}
+        onDragEnd={(e) => {
+          // 拖拽结束时恢复样式
+          e.currentTarget.style.opacity = '';
+          e.currentTarget.style.transform = '';
+        }}
       >
         <PageArrow node={node} onExpandTree={() => handleLoadChildren(node)} />
 
