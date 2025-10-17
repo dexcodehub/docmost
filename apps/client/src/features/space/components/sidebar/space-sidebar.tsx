@@ -17,7 +17,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import classes from "./space-sidebar.module.css";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { treeApiAtom } from "@/features/page/tree/atoms/tree-api-atom.ts";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -39,6 +39,7 @@ import ExportModal from "@/components/common/export-modal";
 import { mobileSidebarAtom } from "@/components/layouts/global/hooks/atoms/sidebar-atom.ts";
 import { useToggleSidebar } from "@/components/layouts/global/hooks/hooks/use-toggle-sidebar.ts";
 import { searchSpotlight } from "@/features/search/constants";
+import EmojiPicker from "@/components/ui/emoji-picker.tsx";
 
 export function SpaceSidebar() {
   const { t } = useTranslation();
@@ -54,6 +55,29 @@ export function SpaceSidebar() {
 
   const spaceRules = space?.membership?.permissions;
   const spaceAbility = useSpaceAbility(spaceRules);
+
+  type MenuKey = "overview" | "search" | "settings" | "newpage";
+  const [emojiConfig, setEmojiConfig] = useState<Record<MenuKey, string | null>>(() => {
+    try {
+      const raw = localStorage.getItem("sidebarEmojiConfig");
+      if (raw) return JSON.parse(raw) as Record<MenuKey, string | null>;
+    } catch (_err) {
+      /* noop */
+    }
+    return { overview: null, search: null, settings: null, newpage: null };
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("sidebarEmojiConfig", JSON.stringify(emojiConfig));
+    } catch (_err) {
+      /* noop */
+    }
+  }, [emojiConfig]);
+
+  const handleEmojiIconClick = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   if (!space) {
     return <></>;
@@ -94,13 +118,30 @@ export function SpaceSidebar() {
               )}
             >
               <div className={classes.menuItemInner}>
-                <IconHome
-                  size={18}
-                  className={classes.menuItemIcon}
-                  stroke={2}
-                />
-                <span>{t("Overview")}</span>
-              </div>
+                <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
+                   <EmojiPicker
+                     onEmojiSelect={(emoji: any) =>
+                       setEmojiConfig((prev) => ({
+                         ...prev,
+                         overview: emoji?.native || emoji?.emoji || emoji,
+                       }))
+                     }
+                     icon={
+                       emojiConfig.overview ? (
+                         <Text size="md">{emojiConfig.overview}</Text>
+                       ) : (
+                         <IconHome size={18} className={classes.menuItemIcon} stroke={2} />
+                       )
+                     }
+                     readOnly={false}
+                     removeEmojiAction={() =>
+                       setEmojiConfig((prev) => ({ ...prev, overview: null }))
+                     }
+                     actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                   />
+                 </div>
+                 <span>{t("Overview")}</span>
+               </div>
             </UnstyledButton>
 
             <UnstyledButton
@@ -108,24 +149,58 @@ export function SpaceSidebar() {
               onClick={searchSpotlight.open}
             >
               <div className={classes.menuItemInner}>
-                <IconSearch
-                  size={18}
-                  className={classes.menuItemIcon}
-                  stroke={2}
-                />
-                <span>{t("Search")}</span>
-              </div>
+                <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
+                   <EmojiPicker
+                     onEmojiSelect={(emoji: any) =>
+                       setEmojiConfig((prev) => ({
+                         ...prev,
+                         search: emoji?.native || emoji?.emoji || emoji,
+                       }))
+                     }
+                     icon={
+                       emojiConfig.search ? (
+                         <Text size="md">{emojiConfig.search}</Text>
+                       ) : (
+                         <IconSearch size={18} className={classes.menuItemIcon} stroke={2} />
+                       )
+                     }
+                     readOnly={false}
+                     removeEmojiAction={() =>
+                       setEmojiConfig((prev) => ({ ...prev, search: null }))
+                     }
+                     actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                   />
+                 </div>
+                 <span>{t("Search")}</span>
+               </div>
             </UnstyledButton>
 
             <UnstyledButton className={classes.menu} onClick={openSettings}>
               <div className={classes.menuItemInner}>
-                <IconSettings
-                  size={18}
-                  className={classes.menuItemIcon}
-                  stroke={2}
-                />
-                <span>{t("Space settings")}</span>
-              </div>
+                <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
+                   <EmojiPicker
+                     onEmojiSelect={(emoji: any) =>
+                       setEmojiConfig((prev) => ({
+                         ...prev,
+                         settings: emoji?.native || emoji?.emoji || emoji,
+                       }))
+                     }
+                     icon={
+                       emojiConfig.settings ? (
+                         <Text size="md">{emojiConfig.settings}</Text>
+                       ) : (
+                         <IconSettings size={18} className={classes.menuItemIcon} stroke={2} />
+                       )
+                     }
+                     readOnly={false}
+                     removeEmojiAction={() =>
+                       setEmojiConfig((prev) => ({ ...prev, settings: null }))
+                     }
+                     actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                   />
+                 </div>
+                 <span>{t("Space settings")}</span>
+               </div>
             </UnstyledButton>
 
             {spaceAbility.can(
@@ -142,13 +217,30 @@ export function SpaceSidebar() {
                 }}
               >
                 <div className={classes.menuItemInner}>
-                  <IconPlus
-                    size={18}
-                    className={classes.menuItemIcon}
-                    stroke={2}
-                  />
-                  <span>{t("New page")}</span>
-                </div>
+                  <div onClick={handleEmojiIconClick} className={classes.emojiIcon}>
+                     <EmojiPicker
+                       onEmojiSelect={(emoji: any) =>
+                         setEmojiConfig((prev) => ({
+                           ...prev,
+                           newpage: emoji?.native || emoji?.emoji || emoji,
+                         }))
+                       }
+                       icon={
+                         emojiConfig.newpage ? (
+                           <Text size="md">{emojiConfig.newpage}</Text>
+                         ) : (
+                           <IconPlus size={18} className={classes.menuItemIcon} stroke={2} />
+                         )
+                       }
+                       readOnly={false}
+                       removeEmojiAction={() =>
+                         setEmojiConfig((prev) => ({ ...prev, newpage: null }))
+                       }
+                       actionIconProps={{ size: "sm", variant: "subtle", c: "gray" }}
+                     />
+                   </div>
+                   <span>{t("New page")}</span>
+                 </div>
               </UnstyledButton>
             )}
           </div>
@@ -198,6 +290,8 @@ export function SpaceSidebar() {
         onClose={closeSettings}
         spaceId={space?.slug}
       />
+
+
     </>
   );
 }

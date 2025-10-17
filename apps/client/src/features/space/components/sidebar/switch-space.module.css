@@ -2,4 +2,23 @@
   width: 100%;
   padding: var(--mantine-spacing-sm);
   color: light-dark(var(--mantine-color-dark-4), var(--mantine-color-dark-0));
+  display: inline-block;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: color 150ms ease, opacity 150ms ease;
+}
+
+@media (max-width: 480px) {
+  .spaceName {
+    padding: var(--mantine-spacing-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spaceName {
+    transition: none;
+  }
 }

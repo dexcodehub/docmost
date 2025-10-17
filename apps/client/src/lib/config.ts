@@ -20,12 +20,17 @@ export function getAppName(): string {
 }
 
 export function getAppUrl(): string {
-  // 在打包后的桌面环境下，返回本地服务地址（支持 localhost 或指定 IP）。
-  const isDesktop =
-    typeof window !== "undefined" && (window as any).__TAURI__ && !import.meta.env.DEV;
-  if (isDesktop) {
+  // 在桌面环境（tauri:// 协议或存在 __TAURI__）返回本地/远程后端地址
+  const tauriProtocol =
+    typeof window !== "undefined" &&
+    typeof window.location?.protocol === "string" &&
+    window.location.protocol.startsWith("tauri");
+  const hasTauri = typeof window !== "undefined" && (window as any).__TAURI__;
+  // 打包后的桌面环境或 WebView 使用 tauri:// 协议时，优先使用配置的后端 Origin
+  if (tauriProtocol || (hasTauri && !import.meta.env.DEV)) {
     return getDesktopServerOrigin();
   }
+  // 其他场景（浏览器或 Tauri 开发模式 http://localhost:5173）使用当前站点
   return `${window.location.protocol}//${window.location.host}`;
 }
 

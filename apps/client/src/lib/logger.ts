@@ -37,6 +37,15 @@ function pushMem(level: "DEBUG" | "INFO" | "WARN" | "ERROR", text: string) {
   notify();
 }
 
+// Attach browser console to Tauri log file when available (no-op in web)
+try {
+  // Will forward console.debug/info/warn/error to the plugin targets
+  // Requires capability: "log:default" in src-tauri/capabilities/default.json
+  (TauriLog as any).attachConsole?.();
+} catch (err) {
+  // ignore when plugin or capability is not available
+}
+
 export function getLogBuffer(): string[] {
   return [...memBuffer];
 }
